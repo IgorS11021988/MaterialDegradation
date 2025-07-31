@@ -1,0 +1,119 @@
+import numpy as np
+from matplotlib import pyplot as plt
+import pandas as pd
+
+from MathProtEnergyProcSynDatas.ValuesGraphics import OneTimeValueGraphic, TimesValuesGraphics
+
+
+# Функция расчета динамики
+def MaterialDegradationInputArrayCreate(Pars,  # Параметры
+
+                                        integrateAttributes  # Аттрибуты интегрирования
+                                        ):  # Формирование массивов входных параметров
+    # Корректируем частотные характеристики
+    Pars["fvAlpha"] *= 2 * np.pi
+
+    # Начальное состояние
+    Pars["TDegMat0"] += Pars["Tokr"]  # Начальная температура сождержимого литий-ионного элемента, град С
+    Pars["TMat0"] += Pars["Tokr"]  # Начальная температура корпуса литий-ионного элемента, град С
+
+    # Корректируем температуры
+    Pars[["TDegMat0", "TMat0", "Tokr", "bADNuMatT", "bADNuMatDegT"]] += 273.15
+
+    # Рассчитываем общее число молей
+    Pars["NuAll"] = Pars["nuMat0"] + Pars["nuMatDeg0"]
+
+    # Время интегрирования
+    Tints = np.array(integrateAttributes["TintI0"], dtype=np.double).reshape(-1,)  # Времена интегрирования при нулевых токах
+
+    # Массив параметров
+    systemParameters = Pars[["fvAlpha",  # Частота колебаний внешнего потока, Гц
+                             "AvAlpha",  # Амплитуда колебаний внешнего потока, А
+                             "Tokr",  # Температура окружающей среды, град С
+                             "sMuDeg",  # Пороговый химический потенциал разрушения, В
+                             "CMuDegMat",  # Коэффициент химического потенциала деградирующегося материала, Дж/моль^2
+                             "nuMats",  # Характерное число молей
+                             "NuAll",  # Общее число молей материала
+                             "ADNuMat0",  # Коэффициент перестройки расположения атомов, См
+                             "ADNuMatDeg0",  # Коэффициент деградации материала, См
+                             "KDegMat",  # Коэффициент теплопередачи деградируемого материала недеградированному, Вт/К
+                             "CQDegMat",  # Теплоемкость деградируемого материала, Дж/К
+                             "KMat",  # Коэффициент теплоотдачи недеградируемого материала, Вт/К
+                             "CQMat",  # Теплоемкость недеградируемого материала, Дж/К
+                             "alphaADNuMatT",  # Экспоненциальный коэффициент перестройки расположения атомов по температуре, 1/К
+                             "alphaADNuMatDegT",  # Экспоненциальный коэффициент дегарадции материала по температуре, 1/К
+                             "bADNuMatT",  # Граничная температура по коэффициенту перестройки расположения атомов, град С
+                             "bADNuMatDegT",  # Граничная температура по коэффициенту деградации материала, град С
+                             "rCADNuMatT",  # Постоянный коэффициент температурной зависимости коэффициента перестройки расположения атомов
+                             "rCADNuMatDegT",  # Постоянный коэффициент температурной зависимости дегарадации материала
+
+                             "betaADNuMatDeg1",
+                             "betaADNuMatDeg2",
+                             "betaADNuMatDeg3",
+                             "betaMu2",
+                             "betaMu3",
+                             "betaADNuMatT2",
+                             "betaADNuMatDegT2",
+                             "betaADNuMatT3",
+                             "betaADNuMatDegT3"
+                             ]].to_numpy()
+
+    # Массив начальных состояний
+    stateCoordinates0 = Pars[["nuMat0", "nuMatDeg0"]].to_numpy()
+    reducedTemp0 = Pars[["TDegMat0", "TMat0"]].to_numpy()
+
+    # Моменты времени
+    NPoints = np.array(integrateAttributes["NPoints"], dtype=np.int32)  # Числа точек интегрирования
+    tBegins = np.zeros_like(Tints)  # Начальные моменты времени
+    ts = []
+    for ind in range(len(NPoints)):
+        ts.append(np.linspace(tBegins[ind], Tints[ind], NPoints[ind]))
+
+    # Возвращаем исходные данные динамики системы
+    return (Tints,
+            stateCoordinates0,
+            reducedTemp0,
+            systemParameters,
+            ts)
+
+
+def MaterialDegradationOutputValues(dyns, fileName,
+                                    sep, dec,
+                                    plotGraphics=False  # Необходимость построения графиков
+                                    ):
+    # Получаем величины из кортежа
+    (t, nuMat, nuMatDeg,
+     TDegMat, TMat, vAlpha) = dyns
+
+    # Сохраняем динамику в файл
+    DynamicDatas = pd.DataFrame({"Time": t.reshape(-1,),
+                                 "nuMat": nuMat.reshape(-1,),
+                                 "nuMatDeg": nuMatDeg.reshape(-1,),
+                                 "TDegMat": TDegMat.reshape(-1,),
+                                 "TMat": TMat.reshape(-1,),
+                                 "vAlpha": vAlpha.reshape(-1,)
+                                 })  # Структура сохраняемых данных
+    DynamicDatas.to_csv(fileName,
+                        sep=sep, decimal=dec,
+                        index=False)  # Сохраняем в csv файл
+
+    # Рисуем при необходимости график
+    if plotGraphics:
+        TimesValuesGraphics(t,  # Моменты времени
+                            [TDegMat, TMat],  # Список величин в моменты времени
+                            ["Деградирующийся материал", "Недеградирующийся материал"],  # Список имен величин
+                            "Температуры материалов",  # Имя полотна
+                            "Температура, град С",  # Имя оси
+                            )  # Графики температуры содержимого и корпуса элемента
+        TimesValuesGraphics(t,  # Моменты времени
+                            [nuMat, nuMatDeg],  # Список величин в моменты времени
+                            ["Недеградированный материал", "Деградированный материал"],  # Список имен величин
+                            "Числа молей материалов",  # Имя полотна
+                            "Число молей",  # Имя оси
+                            )  # Графики напряжений двойных слоев и мембраны элемента
+        OneTimeValueGraphic(t,  # Моменты времени
+                            vAlpha,  # Величины в моменты времени
+                            "Скорость деформации маериала",  # Имя полотна
+                            "Скорость деформации, рад/с"  # Имя оси
+                            )  # График тока во внешней цепи
+        plt.show()
