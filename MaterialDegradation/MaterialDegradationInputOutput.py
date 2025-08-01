@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 
 from pandas import DataFrame
 
-from MathProtEnergyProcSynDatas.ValuesGraphics import OneTimeValueGraphic, TimesValuesGraphics
+from MathProtEnergyProcSynDatas.ValuesGraphics import OneTimeValueGraphic, TimesValuesGraphics, SaveGraphicsImage
 
 
 # Функция расчета динамики
@@ -79,18 +79,6 @@ def MaterialDegradationInputArrayCreate(Pars,  # Параметры
             ts)
 
 
-# Сохранение изображения в файл
-def saveGraphicsImage(imageDir,  # Директория изображения
-                      graphicName,  # Имя графика
-                      dynamicName  # Имя динамики
-                      ):
-    # Формируем полное имя изображения
-    fullImageName = os.path.join(imageDir, graphicName + dynamicName + ".jpg")
-    
-    # Сохраняем изображение
-    plt.savefig(fullImageName)
-
-
 def MaterialDegradationOutputValues(dyns, fileName,
                                     sep, dec,
                                     plotGraphics=False  # Необходимость построения графиков
@@ -128,7 +116,7 @@ def MaterialDegradationOutputValues(dyns, fileName,
                             "Температуры материалов",  # Имя полотна
                             "Температура, град С",  # Имя оси
                             )  # Графики температуры содержимого и корпуса элемента
-        saveGraphicsImage(dynDirName,  # Директория изображения
+        SaveGraphicsImage(dynDirName,  # Директория изображения
                           "MaterialTemperature",  # Имя графика
                           dynName  # Имя динамики
                           )  # Сохраняем в файл
@@ -138,7 +126,7 @@ def MaterialDegradationOutputValues(dyns, fileName,
                             "Числа молей материалов",  # Имя полотна
                             "Число молей",  # Имя оси
                             )  # Графики напряжений двойных слоев и мембраны элемента
-        saveGraphicsImage(dynDirName,  # Директория изображения
+        SaveGraphicsImage(dynDirName,  # Директория изображения
                           "MaterialMoles",  # Имя графика
                           dynName  # Имя динамики
                           )  # Сохраняем в файл
@@ -147,7 +135,7 @@ def MaterialDegradationOutputValues(dyns, fileName,
                             "Скорость деформации маериала",  # Имя полотна
                             "Скорость деформации, рад/с"  # Имя оси
                             )  # График тока во внешней цепи
-        saveGraphicsImage(dynDirName,  # Директория изображения
+        SaveGraphicsImage(dynDirName,  # Директория изображения
                           "MaterialDeformationVelocity",  # Имя графика
                           dynName  # Имя динамики
                           )  # Сохраняем в файл
