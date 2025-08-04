@@ -1,10 +1,10 @@
 README.txt
 setup.py
-MaterialDegradation/MaterialDegradationFunctionCharacteristics.py
-MaterialDegradation/MaterialDegradationFunctionStation.py
-MaterialDegradation/MaterialDegradationFunctionsStation.py
-MaterialDegradation/MaterialDegradationInputOutput.py
-MaterialDegradation/MaterialDegradationStructure.py
+MaterialDegradation/CharacteristicsFunction.py
+MaterialDegradation/InputOutput.py
+MaterialDegradation/StationFunction.py
+MaterialDegradation/StationFunctions.py
+MaterialDegradation/Structure.py
 MaterialDegradation/__init__.py
 MaterialDegradation/fU.py
 MaterialDegradation/fvAlphaCharge.py

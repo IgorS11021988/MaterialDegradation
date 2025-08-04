@@ -1,17 +1,15 @@
-import os
 import numpy as np
 from matplotlib import pyplot as plt
+import pandas as pd
 
-from pandas import DataFrame
-
-from MathProtEnergyProcSynDatas.ValuesGraphics import OneTimeValueGraphic, TimesValuesGraphics, SaveGraphicsImage
+from MathProtEnergyProcSynDatas.ValuesGraphics import OneTimeValueGraphic, TimesValuesGraphics
 
 
 # Функция расчета динамики
-def MaterialDegradationInputArrayCreate(Pars,  # Параметры
+def InputArrayCreate(Pars,  # Параметры
 
-                                        integrateAttributes  # Аттрибуты интегрирования
-                                        ):  # Формирование массивов входных параметров
+                     integrateAttributes  # Аттрибуты интегрирования
+                     ):  # Формирование массивов входных параметров
     # Корректируем частотные характеристики
     Pars["fvAlpha"] *= 2 * np.pi
 
@@ -79,63 +77,43 @@ def MaterialDegradationInputArrayCreate(Pars,  # Параметры
             ts)
 
 
-def MaterialDegradationOutputValues(dyns, fileName,
-                                    sep, dec,
-                                    plotGraphics=False  # Необходимость построения графиков
-                                    ):
-    # Имя файла динамики
-    dynFileName = os.path.basename(fileName)  # Имя файла динамики с расширением
-    dynName = os.path.splitext(dynFileName)[0]  # Имя динамики (имя файла динамики без расширения)
-    
+def OutputValues(dyns, fileName,
+                 sep, dec,
+                 plotGraphics=False  # Необходимость построения графиков
+                 ):
     # Получаем величины из кортежа
     (t, nuMat, nuMatDeg,
      TDegMat, TMat, vAlpha) = dyns
 
     # Сохраняем динамику в файл
-    DynamicDatas = DataFrame({"Time": t.reshape(-1,),
-                              "nuMat": nuMat.reshape(-1,),
-                              "nuMatDeg": nuMatDeg.reshape(-1,),
-                              "TDegMat": TDegMat.reshape(-1,),
-                              "TMat": TMat.reshape(-1,),
-                              "vAlpha": vAlpha.reshape(-1,)
-                              })  # Структура сохраняемых данных
-    print("Writting dynamic: " + dynName)
+    DynamicDatas = pd.DataFrame({"Time": t.reshape(-1,),
+                                 "nuMat": nuMat.reshape(-1,),
+                                 "nuMatDeg": nuMatDeg.reshape(-1,),
+                                 "TDegMat": TDegMat.reshape(-1,),
+                                 "TMat": TMat.reshape(-1,),
+                                 "vAlpha": vAlpha.reshape(-1,)
+                                 })  # Структура сохраняемых данных
     DynamicDatas.to_csv(fileName,
                         sep=sep, decimal=dec,
                         index=False)  # Сохраняем в csv файл
 
     # Рисуем при необходимости график
     if plotGraphics:
-        # Получаем путь к имени файла графиков
-        dynDirName = os.path.dirname(fileName)
-        
-        # Рисуем графики и сохраняем в файлы
         TimesValuesGraphics(t,  # Моменты времени
                             [TDegMat, TMat],  # Список величин в моменты времени
                             ["Деградирующийся материал", "Недеградирующийся материал"],  # Список имен величин
                             "Температуры материалов",  # Имя полотна
                             "Температура, град С",  # Имя оси
                             )  # Графики температуры содержимого и корпуса элемента
-        SaveGraphicsImage(dynDirName,  # Директория изображения
-                          "MaterialTemperature",  # Имя графика
-                          dynName  # Имя динамики
-                          )  # Сохраняем в файл
         TimesValuesGraphics(t,  # Моменты времени
                             [nuMat, nuMatDeg],  # Список величин в моменты времени
                             ["Недеградированный материал", "Деградированный материал"],  # Список имен величин
                             "Числа молей материалов",  # Имя полотна
                             "Число молей",  # Имя оси
                             )  # Графики напряжений двойных слоев и мембраны элемента
-        SaveGraphicsImage(dynDirName,  # Директория изображения
-                          "MaterialMoles",  # Имя графика
-                          dynName  # Имя динамики
-                          )  # Сохраняем в файл
         OneTimeValueGraphic(t,  # Моменты времени
                             vAlpha,  # Величины в моменты времени
                             "Скорость деформации маериала",  # Имя полотна
                             "Скорость деформации, рад/с"  # Имя оси
                             )  # График тока во внешней цепи
-        SaveGraphicsImage(dynDirName,  # Директория изображения
-                          "MaterialDeformationVelocity",  # Имя графика
-                          dynName  # Имя динамики
-                          )  # Сохраняем в файл
+        plt.show()

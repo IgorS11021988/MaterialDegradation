@@ -1,15 +1,15 @@
 import numpy as np
 
-from .MaterialDegradationFunctionsStation import funNuEMat, funMuMat, funADNu
+from .StationFunctions import funNuEMat, funMuMat, funADNu
 from MathProtEnergyProc import NonEqSystemQBase
 
 from MathProtEnergyProc.CorrectionModel import PosLinearFilter
 
 
 # Функция состояния для литий-ионного аккумулятора
-def MaterialDegradationStateFunction(stateCoordinates,
-                                     reducedTemp,
-                                     systemParameters):
+def StateFunction(stateCoordinates,
+                  reducedTemp,
+                  systemParameters):
     # получаем электрические заряды
     [nuMat,  # Число молей недеградированного материала
      nuMatDeg  # Число молей деградированного материала
