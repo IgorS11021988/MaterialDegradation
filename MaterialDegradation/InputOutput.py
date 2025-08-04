@@ -1,8 +1,9 @@
+import os
 import numpy as np
-from matplotlib import pyplot as plt
-import pandas as pd
 
-from MathProtEnergyProcSynDatas.ValuesGraphics import OneTimeValueGraphic, TimesValuesGraphics
+from pandas import DataFrame
+
+from MathProtEnergyProcSynDatas.ValuesGraphics import OneTimeValueGraphic, TimesValuesGraphics, SaveGraphicsImage
 
 
 # Функция расчета динамики
@@ -81,39 +82,58 @@ def OutputValues(dyns, fileName,
                  sep, dec,
                  plotGraphics=False  # Необходимость построения графиков
                  ):
+    # Имя файла динамики
+    dynFileName = os.path.basename(fileName)  # Имя файла динамики с расширением
+    dynName = os.path.splitext(dynFileName)[0]  # Имя динамики (имя файла динамики без расширения)
+
     # Получаем величины из кортежа
     (t, nuMat, nuMatDeg,
      TDegMat, TMat, vAlpha) = dyns
 
     # Сохраняем динамику в файл
-    DynamicDatas = pd.DataFrame({"Time": t.reshape(-1,),
-                                 "nuMat": nuMat.reshape(-1,),
-                                 "nuMatDeg": nuMatDeg.reshape(-1,),
-                                 "TDegMat": TDegMat.reshape(-1,),
-                                 "TMat": TMat.reshape(-1,),
-                                 "vAlpha": vAlpha.reshape(-1,)
-                                 })  # Структура сохраняемых данных
+    DynamicDatas = DataFrame({"Time": t.reshape(-1,),
+                              "nuMat": nuMat.reshape(-1,),
+                              "nuMatDeg": nuMatDeg.reshape(-1,),
+                              "TDegMat": TDegMat.reshape(-1,),
+                              "TMat": TMat.reshape(-1,),
+                              "vAlpha": vAlpha.reshape(-1,)
+                              })  # Структура сохраняемых данных
+    print("Writting dynamic: " + dynName)
     DynamicDatas.to_csv(fileName,
                         sep=sep, decimal=dec,
                         index=False)  # Сохраняем в csv файл
 
     # Рисуем при необходимости график
     if plotGraphics:
+        # Получаем путь к имени файла графиков
+        dynDirName = os.path.dirname(fileName)
+
         TimesValuesGraphics(t,  # Моменты времени
                             [TDegMat, TMat],  # Список величин в моменты времени
                             ["Деградирующийся материал", "Недеградирующийся материал"],  # Список имен величин
                             "Температуры материалов",  # Имя полотна
                             "Температура, град С",  # Имя оси
                             )  # Графики температуры содержимого и корпуса элемента
+        SaveGraphicsImage(dynDirName,  # Директория изображения
+                          "MaterialTemperature",  # Имя графика
+                          dynName  # Имя динамики
+                          )  # Сохраняем в файл
         TimesValuesGraphics(t,  # Моменты времени
                             [nuMat, nuMatDeg],  # Список величин в моменты времени
                             ["Недеградированный материал", "Деградированный материал"],  # Список имен величин
                             "Числа молей материалов",  # Имя полотна
                             "Число молей",  # Имя оси
                             )  # Графики напряжений двойных слоев и мембраны элемента
+        SaveGraphicsImage(dynDirName,  # Директория изображения
+                          "MaterialMoles",  # Имя графика
+                          dynName  # Имя динамики
+                          )  # Сохраняем в файл
         OneTimeValueGraphic(t,  # Моменты времени
                             vAlpha,  # Величины в моменты времени
                             "Скорость деформации маериала",  # Имя полотна
                             "Скорость деформации, рад/с"  # Имя оси
                             )  # График тока во внешней цепи
-        plt.show()
+        SaveGraphicsImage(dynDirName,  # Директория изображения
+                          "MaterialDeformationVelocity",  # Имя графика
+                          dynName  # Имя динамики
+                          )  # Сохраняем в файл
