@@ -4,6 +4,7 @@ import numpy as np
 from pandas import DataFrame
 
 from MathProtEnergyProcSynDatas.ValuesGraphics import OneTimeValueGraphic, TimesValuesGraphics, SaveGraphicsImage
+from MathProtEnergyProcSynDatas.TimesMoments import LinearTimesMoments
 
 
 # Функция расчета динамики
@@ -23,9 +24,6 @@ def InputArrayCreate(Pars,  # Параметры
 
     # Рассчитываем общее число молей
     Pars["NuAll"] = Pars["nuMat0"] + Pars["nuMatDeg0"]
-
-    # Время интегрирования
-    Tints = np.array(integrateAttributes["TintI0"], dtype=np.double).reshape(-1,)  # Времена интегрирования при нулевых токах
 
     # Массив параметров
     systemParameters = Pars[["fvAlpha",  # Частота колебаний внешнего потока, Гц
@@ -64,11 +62,11 @@ def InputArrayCreate(Pars,  # Параметры
     reducedTemp0 = Pars[["TDegMat0", "TMat0"]].to_numpy()
 
     # Моменты времени
+    Tints = np.array(integrateAttributes["Tint"], dtype=np.double)  # Времена интегрирования
     NPoints = np.array(integrateAttributes["NPoints"], dtype=np.int32)  # Числа точек интегрирования
-    tBegins = np.zeros_like(Tints)  # Начальные моменты времени
-    ts = []
-    for ind in range(len(NPoints)):
-        ts.append(np.linspace(tBegins[ind], Tints[ind], NPoints[ind]))
+    ts = LinearTimesMoments(Tints,  # Времена интегрирования
+                            NPoints  # Числа точек интегрирования
+                            )
 
     # Возвращаем исходные данные динамики системы
     return (Tints,
