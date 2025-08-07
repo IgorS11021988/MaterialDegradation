@@ -1,10 +1,8 @@
-import os
 import numpy as np
 
-from pandas import DataFrame
-
-from MathProtEnergyProcSynDatas.ValuesGraphics import OneTimeValueGraphic, TimesValuesGraphics, SaveGraphicsImage
 from MathProtEnergyProcSynDatas.TimesMoments import LinearTimesMoments
+from MathProtEnergyProcSynDatas.Indicate import PlotGraphicIndicate, SaveDynamicToFileIndicate
+from MathProtEnergyProcSynDatas.File import DynamicSaveAndSaveGraphics
 
 
 # Функция расчета динамики
@@ -84,54 +82,52 @@ def OutputValues(dyns, fileName,
     (t, nuMat, nuMatDeg,
      TDegMat, TMat, vAlpha) = dyns
 
-    # Сохраняем динамику в файл
-    DynamicDatas = DataFrame({"Time": t.reshape(-1,),
-                              "nuMat": nuMat.reshape(-1,),
-                              "nuMatDeg": nuMatDeg.reshape(-1,),
-                              "TDegMat": TDegMat.reshape(-1,),
-                              "TMat": TMat.reshape(-1,),
-                              "vAlpha": vAlpha.reshape(-1,)
-                              })  # Структура сохраняемых данных
-    print("Writting dynamic: " + str(index))
-    DynamicDatas.to_csv(fileName,
-                        sep=sep, decimal=dec,
-                        index=False)  # Сохраняем в csv файл
+    # Заголовки и динамики
+    dynamicsHeaders = {"Time": t.reshape(-1,),
+                       "nuMat": nuMat.reshape(-1,),
+                       "nuMatDeg": nuMatDeg.reshape(-1,),
+                       "TDegMat": TDegMat.reshape(-1,),
+                       "TMat": TMat.reshape(-1,),
+                       "vAlpha": vAlpha.reshape(-1,)
+                       }
 
-    # Рисуем при необходимости график
-    if plotGraphics:
-        # Получаем имена директории и динамики
-        dynDirName = os.path.dirname(fileName)  # Имя директории
-        dynName = os.path.basename(fileName)  # Имя файла динамики с расширением
-        dynName = os.path.splitext(dynName)[0]  # Имя файла динамики без расширения
+    # Одиночные графики на полотне
+    oneTimeValueGraphics = [{"values": vAlpha,  # Величины в моменты времени
+                             "graphName": "Скорость деформации маериала",  # Имя полотна
+                             "yAxesName": "Скорость деформации, рад/с",  # Имя оси ординат
+                             "graphFileBaseName": "VExtStream"  # Имя файла графика
+                             }]
 
-        # Строим графики
-        print("Graphic dynamic index: " + str(index))
-        TimesValuesGraphics(t,  # Моменты времени
-                            [TDegMat, TMat],  # Список величин в моменты времени
-                            ["Деградирующийся материал", "Недеградирующийся материал"],  # Список имен величин
-                            "Температуры материалов",  # Имя полотна
-                            "Температура, град С",  # Имя оси
-                            )  # Графики температуры содержимого и корпуса элемента
-        SaveGraphicsImage(dynDirName,  # Директория изображения
-                          "MaterialTemperature",  # Имя графика
-                          dynName  # Имя динамики
-                          )  # Сохраняем в файл
-        TimesValuesGraphics(t,  # Моменты времени
-                            [nuMat, nuMatDeg],  # Список величин в моменты времени
-                            ["Недеградированный материал", "Деградированный материал"],  # Список имен величин
-                            "Числа молей материалов",  # Имя полотна
-                            "Число молей",  # Имя оси
-                            )  # Графики напряжений двойных слоев и мембраны элемента
-        SaveGraphicsImage(dynDirName,  # Директория изображения
-                          "MaterialMoles",  # Имя графика
-                          dynName  # Имя динамики
-                          )  # Сохраняем в файл
-        OneTimeValueGraphic(t,  # Моменты времени
-                            vAlpha,  # Величины в моменты времени
-                            "Скорость деформации маериала",  # Имя полотна
-                            "Скорость деформации, рад/с"  # Имя оси
-                            )  # График тока во внешней цепи
-        SaveGraphicsImage(dynDirName,  # Директория изображения
-                          "MaterialDeformationVelocity",  # Имя графика
-                          dynName  # Имя динамики
-                          )  # Сохраняем в файл
+    # Группы графиков на полотне
+    timesValuesGraphics = [{"listValues": [TDegMat, TMat],  # Список величин в моменты времени
+                            "listValuesNames": ["Деградирующийся материал",
+                                                "Недеградирующийся материал"],  # Список имен величин (в моменты времени)
+                            "graphName": "Температуры материалов",  # Имя полотна
+                            "yAxesName": "Температура, град С",  # Имя оси
+                            "graphFileBaseName": "MaterialTemperature"  # Имя файла графика
+                            },
+
+                           {"listValues": [nuMat, nuMatDeg],  # Список величин в моменты времени
+                            "listValuesNames": ["Недеградированный материал",
+                                                "Деградированный материал"],  # Список имен величин (в моменты времени)
+                            "graphName": "Числа молей материалов",  # Имя полотна
+                            "yAxesName": "Число молей",  # Имя оси
+                            "graphFileBaseName": "MaterialMoles"  # Имя файла графика
+                            }]
+
+    # Сохраняем динамику в .csv файл и отображаем графики
+    DynamicSaveAndSaveGraphics(dynamicsHeaders,  # Словарь динамик с заголовками
+                               fileName,  # Имя файла динамик
+
+                               t,  # Моменты времени
+                               oneTimeValueGraphics,  # Один график на одном полотне
+                               timesValuesGraphics,  # Несколько графиков на одном полотне
+
+                               plotGraphics,  # Необходимость построения графиков
+
+                               sep, dec,   # Разделители (csv и десятичный соответственно)
+
+                               saveDynamicIndicator=SaveDynamicToFileIndicate,  # Индикатор сохранения динамики
+                               saveGraphicIndicator=PlotGraphicIndicate,  # Индикатор отображения графиков
+                               index=index  # Индекс динамики
+                               )
