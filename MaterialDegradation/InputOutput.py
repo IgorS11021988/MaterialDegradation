@@ -1,4 +1,3 @@
-import os
 import numpy as np
 
 from pandas import DataFrame
@@ -77,13 +76,9 @@ def InputArrayCreate(Pars,  # Параметры
 
 
 def OutputValues(dyns, fileName,
-                 sep, dec,
+                 sep, dec, index,
                  plotGraphics=False  # Необходимость построения графиков
                  ):
-    # Имя файла динамики
-    dynFileName = os.path.basename(fileName)  # Имя файла динамики с расширением
-    dynName = os.path.splitext(dynFileName)[0]  # Имя динамики (имя файла динамики без расширения)
-
     # Получаем величины из кортежа
     (t, nuMat, nuMatDeg,
      TDegMat, TMat, vAlpha) = dyns
@@ -96,16 +91,14 @@ def OutputValues(dyns, fileName,
                               "TMat": TMat.reshape(-1,),
                               "vAlpha": vAlpha.reshape(-1,)
                               })  # Структура сохраняемых данных
-    print("Writting dynamic: " + dynName)
+    print("Writting dynamic: " + index)
     DynamicDatas.to_csv(fileName,
                         sep=sep, decimal=dec,
                         index=False)  # Сохраняем в csv файл
 
     # Рисуем при необходимости график
     if plotGraphics:
-        # Получаем путь к имени файла графиков
-        dynDirName = os.path.dirname(fileName)
-
+        print("Graphic dynamic index: ", index)
         TimesValuesGraphics(t,  # Моменты времени
                             [TDegMat, TMat],  # Список величин в моменты времени
                             ["Деградирующийся материал", "Недеградирующийся материал"],  # Список имен величин
