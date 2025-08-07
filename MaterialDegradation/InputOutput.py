@@ -91,14 +91,14 @@ def OutputValues(dyns, fileName,
                               "TMat": TMat.reshape(-1,),
                               "vAlpha": vAlpha.reshape(-1,)
                               })  # Структура сохраняемых данных
-    print("Writting dynamic: " + index)
+    print("Writting dynamic: " + str(index))
     DynamicDatas.to_csv(fileName,
                         sep=sep, decimal=dec,
                         index=False)  # Сохраняем в csv файл
 
     # Рисуем при необходимости график
     if plotGraphics:
-        print("Graphic dynamic index: ", index)
+        print("Graphic dynamic index: " + str(index))
         TimesValuesGraphics(t,  # Моменты времени
                             [TDegMat, TMat],  # Список величин в моменты времени
                             ["Деградирующийся материал", "Недеградирующийся материал"],  # Список имен величин
