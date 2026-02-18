@@ -3,13 +3,11 @@ import numpy as np
 from .StationFunctions import funNuEMat, funMuMat, funADNu
 from MathProtEnergyProc import NonEqSystemQBase
 
-from MathProtEnergyProc.CorrectionModel import PosLinearFilter
-
 
 # Функция состояния для литий-ионного аккумулятора
-def StateFunction(stateCoordinates,
-                  reducedTemp,
-                  systemParameters):
+def IndepStateFunction(stateCoordinates,
+                       reducedTemp,
+                       systemParameters):
     # получаем электрические заряды
     [nuMat,  # Число молей недеградированного материала
      nuMatDeg  # Число молей деградированного материала
@@ -52,20 +50,11 @@ def StateFunction(stateCoordinates,
      betaADNuMatDegT3
      ] = systemParameters
 
-    # Матрица баланса
-    balanceMatrix = np.array([])
-
     # Рассчитываем корректировочный коэффициент потока
     kVAlpha = 1 - np.exp(-nuMat / nuMats)
 
-    # Внешние потоки зарядов
-    stateCoordinatesStreams = np.array([-vAlpha * kVAlpha], dtype=np.double)
-
-    # Внешние потоки теплоты
-    heatEnergyPowersStreams = np.array([])
-
-    # Выводим температуры
-    energyPowerTemperatures = np.array([TDegMat, TMat, Tokr], dtype=np.double)
+    # Расчитываем внешний поток
+    sVAlpha = -vAlpha * kVAlpha
 
     # Определяем число молей возбужденных молекул
     (nuEMat, rNuEMat) = funNuEMat(nuMat, nuMatDeg, NuAll)
@@ -75,51 +64,27 @@ def StateFunction(stateCoordinates,
                                  CMuDegMat, sMuDeg,
                                  betaMu2, betaMu3)
 
-    # Потенциалы взаимодействия энергетических степеней свободы
-    potentialInter = np.array([muMat, muMatDeg], dtype=np.double)
+    # Матрица Якоби приведенной энтропии по числам молей
+    JSNu = np.array([muMat, muMatDeg], dtype=np.double) / TDegMat
 
-    # Потенциалы взаимодействия между энергетическими степенями свободы
-    potentialInterBet = np.array([])
+    # Матрица Гесса приведенной энтропии по температуре и электрическим зарядам
+    HSNuT = np.vstack([-JSNu / TDegMat,
+                       np.zeros_like(JSNu)])
 
-    # Доли распределения некомпенсированной теплоты
-    beta = np.array([])
+    # Приведенные первые и вторые производные приведенной энтропии по температуре
+    JST = np.array([CQDegMat, CQMat], dtype=np.double) / reducedTemp
+    HSTT = -JST / reducedTemp
 
     # Определяем сопротивления двойных слоев и мембраны
-    (ADNup, ADNun) = funADNu(rNuEMat, TDegMat, muMatDeg, ADNuMat0, ADNuMatDeg0,
-                             alphaADNuMatT, alphaADNuMatDegT, bADNuMatT, bADNuMatDegT, rCADNuMatT, rCADNuMatDegT,
-                             betaADNuMatT2, betaADNuMatDegT2, betaADNuMatT3, betaADNuMatDegT3,
-                             betaADNuMatDeg1, betaADNuMatDeg2, betaADNuMatDeg3)
+    ADNu = funADNu(rNuEMat, TDegMat, muMatDeg, ADNuMat0, ADNuMatDeg0,
+                   alphaADNuMatT, alphaADNuMatDegT, bADNuMatT, bADNuMatDegT, rCADNuMatT, rCADNuMatDegT,
+                   betaADNuMatT2, betaADNuMatDegT2, betaADNuMatT3, betaADNuMatDegT3,
+                   betaADNuMatDeg1, betaADNuMatDeg2, betaADNuMatDeg3) * TDegMat / NonEqSystemQBase.GetTbase()
 
-    # Главный блок кинетической матрицы по процессам
-    ADNup = PosLinearFilter(ADNup)
-    ADNun = PosLinearFilter(ADNun)
-    kineticMatrixPCPC = np.array([ADNup, ADNun], dtype=np.double) * TDegMat / NonEqSystemQBase.GetTbase()
-
-    # Перекрестные блоки кинетической матрицы по процессам
-    kineticMatrixPCHeat = np.array([])
-    kineticMatrixHeatPC = np.array([])
-
-    # Главный блок кинетической матрицы по теплообмену
-    KDegMat = PosLinearFilter(KDegMat)
-    KMat = PosLinearFilter(KMat)
-    kineticMatrixHeatHeat = np.array([KDegMat * TDegMat * TMat, KMat * TMat * Tokr], dtype=np.double) / NonEqSystemQBase.GetTbase()
-
-    # Обратная теплоемкость литий-ионного аккумулятора
-    invHeatCapacityMatrixCf = np.array([1 / CQDegMat, 1 / CQMat], dtype=np.double)
-
-    # Приведенные тепловые эффекты литий-ионного аккумулятора
-    heatEffectMatrixCf = potentialInter / CQDegMat
+    # Коэффициенты теплообмена
+    KQMat = np.array([KDegMat * TDegMat, KMat * Tokr], dtype=np.double) * TMat / NonEqSystemQBase.GetTbase()
 
     # Выводим результат
-    return (balanceMatrix,
-            stateCoordinatesStreams,
-            heatEnergyPowersStreams,
-            energyPowerTemperatures,
-            potentialInter,
-            potentialInterBet,
-            beta, kineticMatrixPCPC,
-            kineticMatrixPCHeat,
-            kineticMatrixHeatPC,
-            kineticMatrixHeatHeat,
-            invHeatCapacityMatrixCf,
-            heatEffectMatrixCf)
+    return (Tokr, sVAlpha,
+            JSNu, JST, HSNuT, HSTT,
+            ADNu, KQMat)

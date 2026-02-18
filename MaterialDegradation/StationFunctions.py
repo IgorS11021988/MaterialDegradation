@@ -48,4 +48,4 @@ def funADNu(rNuEMat, TDegMat, muMatDeg, ADNuMat0, ADNuMatDeg0,
     cNuDeg = (np.sign(muMatDeg) + 1) / 2
 
     # Выводим результат
-    return (ADNuMat0 / aTDNup, ADNuMatDeg0 * kADNuMatDeg * cNuDeg / aTDNun)
+    return np.array([ADNuMat0 / aTDNup, ADNuMatDeg0 * kADNuMatDeg * cNuDeg / aTDNun], dtype=np.double)
