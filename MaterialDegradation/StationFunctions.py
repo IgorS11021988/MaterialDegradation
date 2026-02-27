@@ -14,6 +14,7 @@ def funNuEMat(nuMat, nuMatDeg, NuAll):
     return (nuEMat, nuEMat / NuAll)
 
 
+# Функции для свойств веществ и процессов
 def funMuMat(nuEMat, rNuEMat,
              CMuDegMat, sMuDeg,
              betaMu2, betaMu3):  # Приведенные химические потенциалы исходного и деградированного материала
@@ -28,8 +29,7 @@ def funMuMat(nuEMat, rNuEMat,
     return (muMat, muMatDeg)
 
 
-# Функции для свойств веществ и процессов
-def funADNu(rNuEMat, TDegMat, muMatDeg, ADNuMat0, ADNuMatDeg0,
+def funADNu(rNuEMat, TDegMat, muMat, muMatDeg, ADNuMat0, ADNuMatDeg0,
             alphaADNuMatT, alphaADNuMatDegT, bADNuMatT, bADNuMatDegT, rCADNuMatT, rCADNuMatDegT,
             betaADNuMatT2, betaADNuMatDegT2, betaADNuMatT3, betaADNuMatDegT3,
             betaADNuMatDeg1, betaADNuMatDeg2, betaADNuMatDeg3):  # Функция сопротивления
@@ -45,7 +45,11 @@ def funADNu(rNuEMat, TDegMat, muMatDeg, ADNuMat0, ADNuMatDeg0,
     kADNuMatDeg = 1 + betaADNuMatDeg1 * rNuEMat + betaADNuMatDeg2 * np.power(rNuEMat, 2) + betaADNuMatDeg3 * np.power(rNuEMat, 3)
 
     # Добавляем вентильный коэффициент
-    cNuDeg = (np.sign(muMatDeg) + 1) / 2
+    cNuDegMu = (np.sign(muMatDeg) + 1) / 2
+    if muMat > 0:
+        cNuAll = (np.sign(rNuEMat) + 1) / 2
+    else:
+        cNuAll = 1
 
     # Выводим результат
-    return np.array([ADNuMat0 / aTDNup, ADNuMatDeg0 * kADNuMatDeg * cNuDeg / aTDNun], dtype=np.double)
+    return np.array([ADNuMat0 * cNuAll / aTDNup, ADNuMatDeg0 * kADNuMatDeg * cNuDegMu / aTDNun], dtype=np.double)

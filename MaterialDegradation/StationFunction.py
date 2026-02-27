@@ -51,7 +51,7 @@ def IndepStateFunction(stateCoordinates,
      ] = systemParameters
 
     # Рассчитываем корректировочный коэффициент потока
-    kVAlpha = 1 - np.exp(-nuMat / nuMats)
+    kVAlpha = (1 - np.exp(-nuMat / nuMats)) * (np.sign(nuMat) + 1) / 2
 
     # Расчитываем внешний поток
     sVAlpha = -vAlpha * kVAlpha
@@ -76,7 +76,7 @@ def IndepStateFunction(stateCoordinates,
     HSTT = -JST / reducedTemp
 
     # Определяем сопротивления двойных слоев и мембраны
-    ADNu = funADNu(rNuEMat, TDegMat, muMatDeg, ADNuMat0, ADNuMatDeg0,
+    ADNu = funADNu(rNuEMat, TDegMat, muMat, muMatDeg, ADNuMat0, ADNuMatDeg0,
                    alphaADNuMatT, alphaADNuMatDegT, bADNuMatT, bADNuMatDegT, rCADNuMatT, rCADNuMatDegT,
                    betaADNuMatT2, betaADNuMatDegT2, betaADNuMatT3, betaADNuMatDegT3,
                    betaADNuMatDeg1, betaADNuMatDeg2, betaADNuMatDeg3) * TDegMat / NonEqSystemQBase.GetTbase()
