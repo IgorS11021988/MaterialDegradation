@@ -1,19 +1,19 @@
 import numpy as np
 
-from .StationFunction import IndepStateFunction
+from .StationFunction import IndepStateFunction, stateCoordinatesNames, reducedTemperaturesEnergyPowersNames
 
+from MathProtEnergyProc.CorrectionModel import KineticMatrixQ, KineticMatrixFromPosSubMatrix, CreateBlockMatrix
 from MathProtEnergyProc.HeatPowerValues import IntPotentialsOne, HeatValuesOne
 
-from MathProtEnergyProc.CorrectionModel import PosLinearFilter
+from MathProtEnergyProc.CorrectionModel import ReluFilter, PosLinearFilter
 
 
 # Функция структуры аккумулятора
 def StructureFunction():
-    # Описываем структуру деградирующегося материала
-    stateCoordinatesNames = ["nuMat", "nusysStructure"]  # Имена координат состояния
+    # Описываем структуру водородно-воздушного топливного элемента
+    processCoordinatesNames = ["dqbinp", "dqm", "dqbinn", "diffH2O", "evH2Op", "evH2On"]  # Имена координат процессов
     processCoordinatesNames = ["dnuMatp", "dnuMatn"]  # Имена координат процессов
     energyPowersNames = ["EnPowDegMat", "EnPowMat", "EnPowOkr"]  # Имена энергетических степеней свободы
-    reducedTemperaturesEnergyPowersNames = ["TDegMat", "TMat"]  # Имена приведенных температур энергетических степеней свободы
     energyPowersBetNames = []  # Имена взаимодействий между энергетическими степенями свободы
     heatTransfersNames = ["QDegMatMat", "QMatExp"]  # Имена потоков переноса теплоты
     heatTransfersOutputEnergyPowersNames = ["EnPowDegMat", "EnPowMat"]  # Имена энергетических степеней свободы, с которых уходит теплота
@@ -23,7 +23,7 @@ def StructureFunction():
     stateCoordinatesVarBalanceNames = []  # Имена переменных коэффициентов матрицы баланса по координатам состояния
     processCoordinatesVarBalanceNames = []  # Имена переменных коэффициентов матрицы баланса по координатам процессов
     energyPowersVarTemperatureNames = ["EnPowDegMat", "EnPowMat", "EnPowOkr"]  # Имена переменных температур энергетических степеней свободы
-    stateCoordinatesVarPotentialsInterNames = ["nuMat", "nusysStructure"]  # Имена переменных потенциалов взаимодействия по координатам состояния
+    stateCoordinatesVarPotentialsInterNames = ["nuMat", "nuMatDeg"]  # Имена переменных потенциалов взаимодействия по координатам состояния
     energyPowersVarPotentialsInterNames = ["EnPowDegMat", "EnPowDegMat"]  # Имена переменных потенциалов взаимодействия по энергетическим степеням свободы
     stateCoordinatesVarPotentialsInterBetNames = []  # Имена переменных потенциалов взаимодействия для взаимодействий между энергетическими степенями свободы по координатам состояния
     energyPowersVarPotentialsInterBetNames = []  # Имена переменных потенциалов взаимодействия для взаимодействий между энергетическими степенями свободы по энергетическим степеням свободы
@@ -32,7 +32,7 @@ def StructureFunction():
     reducedTemperaturesEnergyPowersVarInvHeatCapacityNames = ["TDegMat", "TMat"]  # Имена переменных коэффициентов обратных теплоемкостей по отношению к приведенным температурам
     energyPowersVarInvHeatCapacityNames = ["EnPowDegMat", "EnPowMat"]  # Имена переменных коэффициентов обратных теплоемкостей по отношению к энергетическим степеням свободы
     reducedTemperaturesEnergyPowersVarHeatEffectNames = ["TDegMat", "TDegMat"]  # Имена переменных коэффициентов обратных теплоемкостей по отношению к приведенным температурам
-    stateCoordinatesVarHeatEffectNames = ["nuMat", "nusysStructure"]  # Имена переменных коэффициентов обратных теплоемкостей по отношению к координатам состояния
+    stateCoordinatesVarHeatEffectNames = ["nuMat", "nuMatDeg"]  # Имена переменных коэффициентов обратных теплоемкостей по отношению к координатам состояния
     varKineticPCPCNames = ["dnuMatp", "dnuMatn"]  # Имена сопряженностей между собой координат процессов
     varKineticPCPCAffNames = ["dnuMatp", "dnuMatn"]  # Имена сопряженностей между собой термодинамических сил
     varKineticPCHeatNames = []  # Имена сопряженностей координат процессов с теплопереносами
@@ -48,8 +48,8 @@ def StructureFunction():
     potentialInterMat = IntPotentialsOne(stateCoordinatesNames,  # Имена координат состояния
                                          ["EnPowDegMat", "EnPowMat"],  # Имена энергетических степеней свободы
 
-                                         [      "nuMat", "nusysStructure"],  # Имена переменных потенциалов взаимодействия по координатам состояния
-                                         ["EnPowDegMat",    "EnPowDegMat"]  # Имена переменных потенциалов взаимодействия по энергетическим степеням свободы
+                                         [      "nuMat",     "nuMatDeg"],  # Имена переменных потенциалов взаимодействия по координатам состояния
+                                         ["EnPowDegMat",  "EnPowDegMat"]  # Имена переменных потенциалов взаимодействия по энергетическим степеням свободы
                                          )
 
     # Приведенные обратные теплоемкости и тепловые эффекты
@@ -57,8 +57,8 @@ def StructureFunction():
                                   ["EnPowDegMat", "EnPowMat"],  # Имена энергетических степеней свободы
 
                                   ["EnPowDegMat", "EnPowMat"],  # Имена переменных коэффициентов обратных теплоемкостей по отношению к энергетическим степеням свободы
-                                  ["EnPowDegMat",    "EnPowDegMat"],  # Имена переменных коэффициентов обратных теплоемкостей по отношению к приведенным температурам
-                                  [      "nuMat", "nusysStructure"]  # Имена переменных коэффициентов обратных теплоемкостей по отношению к координатам состояния
+                                  ["EnPowDegMat", "EnPowDegMat"],  # Имена переменных коэффициентов обратных теплоемкостей по отношению к приведенным температурам
+                                  [      "nuMat",    "nuMatDeg"]  # Имена переменных коэффициентов обратных теплоемкостей по отношению к координатам состояния
                                   )
 
     # Функция состояния для литий-ионного аккумулятора
@@ -169,7 +169,7 @@ def ConstParametersFunction(sysStructure  # Структура системы
                             ):
     # Задаем связь между коордиинатами состояния и процессами
     sysStructure.SetBalanceStateCoordinatesConstElement("nuMat", "dnuMatp", 1)
-    sysStructure.SetBalanceStateCoordinatesConstElement("nusysStructure", "dnuMatn", 1)
+    sysStructure.SetBalanceStateCoordinatesConstElement("nuMatDeg", "dnuMatn", 1)
 
     # Задаем доли распределения некомпенсированной теплоты
     sysStructure.SetBetaConstElement("EnPowDegMat", "dnuMatp", 1.0)

@@ -4,9 +4,6 @@ from MathProtEnergyProcSynDatas.TimesMoments import LinearTimesMoments
 from MathProtEnergyProcSynDatas.Indicate import PlotGraphicIndicate, SaveDynamicToFileIndicate
 from MathProtEnergyProcSynDatas.File import DynamicSaveAndSaveGraphics
 
-from .fU import UParametersSystemParametersNames, otherSystemParametersNames
-from .StationFunction import stateCoordinatesNames, reducedTemperaturesEnergyPowersNames
-
 
 # Функция расчета динамики
 def InputArrayCreate(Pars,  # Параметры

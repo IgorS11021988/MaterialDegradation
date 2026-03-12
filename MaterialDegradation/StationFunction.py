@@ -4,11 +4,28 @@ from .StationFunctions import funNuEMat, funMuMat, funADNu
 from MathProtEnergyProc import NonEqSystemQBase
 
 
+# Имена координат состояния
+stateCoordinatesNames = ["nuMat",  # Число молей недегралированного материала
+                         "nuMatDeg"  # Число молей дегралированного материала
+                         ]
+
+
+# Имена приведенных температур энергетических степеней свободы
+reducedTemperaturesEnergyPowersNames = ["TDegMat",  # Температура деградированного материала, К
+                                        "TMat"  # Температура недеградированного материала, К
+                                        ]
+
+
+# Имена переменных параметров системы
+USystemParametersNames = ["vAlpha"  # Внешний поток, моль/с
+                          ]
+
+
 # Функция состояния для литий-ионного аккумулятора
 def IndepStateFunction(stateCoordinates,
                        reducedTemp,
                        systemParameters):
-    # получаем электрические заряды
+    # Получаем числа молей материалов
     [nuMat,  # Число молей недеградированного материала
      nuMatDeg  # Число молей деградированного материала
      ] = stateCoordinates
