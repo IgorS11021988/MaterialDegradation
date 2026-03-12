@@ -39,4 +39,4 @@ def CharacteristicsFunction(t,  # Моменты времени
     TMat = reducedTemp[:, TMatInd] - 273.15  # Температура недеградирующегося материала
 
     # Выводим результат
-    return (t, nuMat, nuMatDeg, TDegMat, TMat, vAlpha)
+    return (t.reshape(-1,), nuMat, nuMatDeg, TDegMat, TMat, vAlpha)
