@@ -1,9 +1,6 @@
-import numpy as np
+from MathProtEnergyProcBase.IndexFunctions import GetIndex
 
-from MathProtEnergyProcBase.IndexFunctions import GetIndex, GetIndexes
-
-from .StationFunction import stateCoordinatesNames, reducedTemperaturesEnergyPowersNames, USystemParametersNames
-from .fU import fU
+from .AttributesNames import stateCoordinatesNames, reducedTemperaturesEnergyPowersNames, USystemParametersNames
 
 
 # Индексы координат состояния
@@ -22,12 +19,10 @@ vAlphaInd = GetIndex(USystemParametersNames, "vAlpha")  # Индекс пото�
 def CharacteristicsFunction(t,  # Моменты времени
                             stateCoordinates,  # Координаты состояния
                             reducedTemp,  # Приведенные температуры
-                            systemParameters  # Параметры системы
+                            USystemParameters,  # U-параметры системы
+                            otherSystemParameters  # Прочие параметры системы
                             ):
     # Получаем динамику тока
-    (USystemParameters, _) = fU(t,  # Моменты времени
-                                systemParameters  # Параметры системы
-                                )
     vAlpha = USystemParameters[:, vAlphaInd]  # Поток вещества в текущие моменты времени
 
     # Получаем координаты состояния

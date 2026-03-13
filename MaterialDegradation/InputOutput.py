@@ -4,9 +4,6 @@ from MathProtEnergyProcSynDatas.TimesMoments import LinearTimesMoments
 from MathProtEnergyProcSynDatas.Indicate import PlotGraphicIndicate, SaveDynamicToFileIndicate
 from MathProtEnergyProcSynDatas.File import DynamicSaveAndSaveGraphics
 
-from .fU import UParametersSystemParametersNames, otherSystemParametersNames
-from .StationFunction import stateCoordinatesNames, reducedTemperaturesEnergyPowersNames
-
 
 # Функция расчета динамики
 def InputArrayCreate(Pars,  # Параметры
@@ -26,14 +23,6 @@ def InputArrayCreate(Pars,  # Параметры
     # Рассчитываем общее число молей
     Pars["NuAll"] = Pars["nuMat"] + Pars["nuMatDeg"]
 
-    # Массив параметров
-    USystemParametersNames = UParametersSystemParametersNames + otherSystemParametersNames
-    systemParameters = Pars[USystemParametersNames].to_numpy()
-
-    # Массив начальных состояний
-    stateCoordinates0 = Pars[stateCoordinatesNames].to_numpy()
-    reducedTemp0 = Pars[reducedTemperaturesEnergyPowersNames].to_numpy()
-
     #  Моменты времени
     Tints = integrateAttributes["Tint"].to_numpy()  # Времена интегрирования
     NPoints = np.array(integrateAttributes["NPoints"], dtype=np.int32)  # Числа точек интегрирования
@@ -42,11 +31,7 @@ def InputArrayCreate(Pars,  # Параметры
                             )
 
     # Возвращаем исходные данные динамики системы
-    return (Tints,
-            stateCoordinates0,
-            reducedTemp0,
-            systemParameters,
-            ts)
+    return (Pars, Tints, ts)
 
 
 # Обработка результатов моделирования динамик

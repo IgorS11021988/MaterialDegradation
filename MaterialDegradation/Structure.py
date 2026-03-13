@@ -1,8 +1,8 @@
 import numpy as np
 
-from .StationFunction import IndepStateFunction, stateCoordinatesNames, reducedTemperaturesEnergyPowersNames
+from .StationFunction import IndepStateFunction
+from .AttributesNames import stateCoordinatesNames, reducedTemperaturesEnergyPowersNames
 
-from MathProtEnergyProc.CorrectionModel import KineticMatrixQ, KineticMatrixFromPosSubMatrix, CreateBlockMatrix
 from MathProtEnergyProc.HeatPowerValues import IntPotentialsOne, HeatValuesOne
 
 from MathProtEnergyProc.CorrectionModel import ReluFilter, PosLinearFilter
@@ -101,7 +101,7 @@ def StructureFunction():
         kineticMatrixHeatPC = np.array([])
 
         # Главный блок кинетической матрицы по теплообмену
-        kineticMatrixHeatHeat = PosLinearFilter(KQMat)
+        kineticMatrixHeatHeat = ReluFilter(KQMat)
 
         # Обратная теплоемкость и приведенные тепловые эффекты литий-ионного аккумулятора
         (invHeatCapacityMatrixCf,  # Обратная теплоемкость водородно-воздушного топливного элемента
